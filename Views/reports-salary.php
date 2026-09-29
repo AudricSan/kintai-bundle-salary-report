@@ -113,7 +113,7 @@ echo Flash::fromQuery('success', [
             </div>
         </details>
         <?php else: ?>
-        <button type="button" class="btn btn--primary" onclick="srResetCreateModal();openModal('sr-create-modal')">+ <?= __('sr_new') ?></button>
+        <button type="button" class="btn btn--primary" data-on-click="srOpenCreateModal">+ <?= __('sr_new') ?></button>
         <?php endif; ?>
         <?php if (!$allMode): ?>
         <?= Button::make('← ' . __('back'))->ghost()->sm()->link(back_url($BASE_URL . '/admin/stores/' . $storeId . '/edit'))->render() ?>
@@ -129,7 +129,7 @@ echo Flash::fromQuery('success', [
             <?php if ($allMode): ?>
             <div class="shifts-filters__group">
                 <label class="shifts-filters__label" for="sf-store"><?= __('store') ?></label>
-                <select id="sf-store" name="store_id" class="form-control form-control-sm" onchange="this.form.submit()">
+                <select id="sf-store" name="store_id" class="form-control form-control-sm" data-submit-on-change>
                     <option value="0"><?= __('all_stores') ?></option>
                     <?php foreach ($stores as $s): ?>
                         <option value="<?= (int) $s['id'] ?>" <?= (int) $s['id'] === $filter_store_id ? 'selected' : '' ?>><?= htmlspecialchars($s['name'] ?? '') ?></option>
@@ -140,7 +140,7 @@ echo Flash::fromQuery('success', [
 
             <div class="shifts-filters__group">
                 <label class="shifts-filters__label" for="sf-year"><?= __('year') ?></label>
-                <select id="sf-year" name="year" class="form-control form-control-sm" onchange="this.form.submit()">
+                <select id="sf-year" name="year" class="form-control form-control-sm" data-submit-on-change>
                     <option value=""><?= __('all_years') ?></option>
                     <?php foreach ($years as $y): ?>
                         <option value="<?= $y ?>" <?= (string) $y === $filter_year ? 'selected' : '' ?>><?= $y ?></option>
@@ -150,7 +150,7 @@ echo Flash::fromQuery('success', [
 
             <div class="shifts-filters__group">
                 <label class="shifts-filters__label" for="sf-month"><?= __('month') ?></label>
-                <select id="sf-month" name="month" class="form-control form-control-sm" onchange="this.form.submit()">
+                <select id="sf-month" name="month" class="form-control form-control-sm" data-submit-on-change>
                     <option value=""><?= __('all_months') ?></option>
                     <?php foreach ($months as $val => $label): ?>
                         <option value="<?= $val ?>" <?= $val === $filter_month ? 'selected' : '' ?>><?= $label ?></option>
@@ -222,13 +222,13 @@ ob_start();
 <div id="sr-step-choice">
     <p class="text-muted mb-sm"><?= __('sr_new_choice_intro') ?></p>
     <div class="sr-choice-row">
-        <button type="button" class="btn btn--outline sr-choice-btn" onclick="srShowStep('store')">🏬<br><?= __('sr_new_store_wide') ?></button>
-        <button type="button" class="btn btn--outline sr-choice-btn" onclick="srShowStep('employee')">👤<br><?= __('sr_new_for_employee') ?></button>
+        <button type="button" class="btn btn--outline sr-choice-btn" data-on-click="srShowStep" data-args='["store"]'>🏬<br><?= __('sr_new_store_wide') ?></button>
+        <button type="button" class="btn btn--outline sr-choice-btn" data-on-click="srShowStep" data-args='["employee"]'>👤<br><?= __('sr_new_for_employee') ?></button>
     </div>
 </div>
 <div id="sr-step-store" class="hidden">
-    <button type="button" class="btn btn--ghost btn--sm mb-sm" onclick="srShowStep('choice')">← <?= __('back') ?></button>
-    <input type="text" class="form-control form-control-sm mb-sm" placeholder="<?= __('search') ?>…" oninput="srFilterList(this, 'sr-store-list')">
+    <button type="button" class="btn btn--ghost btn--sm mb-sm" data-on-click="srShowStep" data-args='["choice"]'>← <?= __('back') ?></button>
+    <input type="text" class="form-control form-control-sm mb-sm" placeholder="<?= __('search') ?>…" data-on-input="srFilterList" data-args='["@this", "sr-store-list"]'>
     <div id="sr-store-list" class="store-picker__panel store-picker__panel--static">
         <?php foreach ($stores as $s): ?>
             <a class="store-picker__item" href="<?= htmlspecialchars($BASE_URL . '/admin/stores/' . (int) $s['id'] . '/reports/salary/create') ?>"><?= htmlspecialchars($s['name'] ?? '') ?></a>
@@ -236,9 +236,9 @@ ob_start();
     </div>
 </div>
 <div id="sr-step-employee" class="hidden">
-    <button type="button" class="btn btn--ghost btn--sm mb-sm" onclick="srShowStep('choice')">← <?= __('back') ?></button>
+    <button type="button" class="btn btn--ghost btn--sm mb-sm" data-on-click="srShowStep" data-args='["choice"]'>← <?= __('back') ?></button>
     <?php if ($store_members_by_store !== []): ?>
-    <input type="text" class="form-control form-control-sm mb-sm" placeholder="<?= __('search') ?>…" oninput="srFilterList(this, 'sr-employee-list')">
+    <input type="text" class="form-control form-control-sm mb-sm" placeholder="<?= __('search') ?>…" data-on-input="srFilterList" data-args='["@this", "sr-employee-list"]'>
     <?php endif; ?>
     <div id="sr-employee-list" class="store-picker__panel store-picker__panel--static">
         <?php if ($store_members_by_store === []): ?>
@@ -257,7 +257,7 @@ ob_start();
 $srModalBody = ob_get_clean();
 echo Modal::make('sr-create-modal')->title(__('sr_new'))->body($srModalBody)->render();
 ?>
-<script>
+<script nonce="<?= function_exists('csp_nonce') ? csp_nonce() : '' ?>">
 function srShowStep(step) {
     document.getElementById('sr-step-choice').classList.toggle('hidden', step !== 'choice');
     document.getElementById('sr-step-store').classList.toggle('hidden', step !== 'store');
@@ -292,6 +292,11 @@ function srResetCreateModal() {
     document.querySelectorAll('#sr-create-modal .store-picker__item, #sr-create-modal .store-picker__title').forEach(function (el) {
         el.style.display = '';
     });
+}
+// Ouvre la modale de création (remplace l'ancien onclick inline « reset puis openModal »).
+function srOpenCreateModal() {
+    srResetCreateModal();
+    openModal('sr-create-modal');
 }
 </script>
 <?php endif; ?>
