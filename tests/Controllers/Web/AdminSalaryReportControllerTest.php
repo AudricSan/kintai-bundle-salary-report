@@ -733,6 +733,7 @@ final class AdminSalaryReportControllerTest extends TestCase
         $req->setRouteParams(['id' => '1']);
 
         $this->stores->method('findById')->with(1)->willReturn(['id' => 1]);
+        $this->storeUsers->method('findMembership')->with(1, 7)->willReturn(['id' => 3]);
         $this->salaryReports->method('findByStoreAndMonth')->with(1, '2026-08', 7)->willReturn(null);
         $this->salaryReports->expects($this->once())->method('save')->with($this->callback(
             fn(array $data) => $data['user_id'] === 7 && $data['employee_name'] === 'Jean Dupont'
@@ -753,12 +754,30 @@ final class AdminSalaryReportControllerTest extends TestCase
 
         $this->stores->method('findById')->with(1)->willReturn(['id' => 1]);
         // Un rapport global existe déjà pour ce mois (user_id=null), mais celui de l'employé 7 n'existe pas encore.
+        $this->storeUsers->method('findMembership')->with(1, 7)->willReturn(['id' => 3]);
         $this->salaryReports->method('findByStoreAndMonth')->with(1, '2026-08', 7)->willReturn(null);
         $this->salaryReports->expects($this->once())->method('save')->willReturn(['id' => 61]);
 
         $response = $this->controller->storeSalaryReport($req);
 
         $this->assertSame(302, $response->status());
+    }
+
+    /** Audit du 13/10/2026 : un rapport de salaire ne peut pas viser un compte étranger au magasin. */
+    public function testStoreSalaryReportRefusesUserOutsideTheStore(): void
+    {
+        $_POST = ['target_month' => '2026-08', 'user_id' => '77'];
+        $req = new Request();
+        $req->setAttribute('managed_store_ids', null);
+        $req->setAttribute('auth_user', ['id' => 1]);
+        $req->setRouteParams(['id' => '1']);
+
+        $this->stores->method('findById')->with(1)->willReturn(['id' => 1]);
+        $this->storeUsers->method('findMembership')->willReturn(null);
+        $this->salaryReports->expects($this->never())->method('save');
+
+        $this->expectException(\kintai\Core\Exceptions\ValidationException::class);
+        $this->controller->storeSalaryReport($req);
     }
 
     private function invokeCalculateSalaryPreset(array $store, string $targetMonth, array $authUser, ?int $userId = null): array
