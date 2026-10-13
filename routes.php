@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-use kintai\Core\Middleware\AuthMiddleware;
-use kintai\Core\Middleware\PermissionMiddleware;
+use kintai\Contract\Http\Middleware\AuthMiddleware;
+use kintai\Contract\Http\Middleware\PermissionMiddleware;
 use kintai\Bundles\Installed\SalaryReport\Controllers\Web\AdminSalaryReportController;
 
-/** @var kintai\Core\Router $router */
-/** @var kintai\Core\Container $container */
+/** @var kintai\Contract\Http\Router $router */
+/** @var kintai\Contract\Container $container */
 
 // =============================================================================
 // SalaryReport — Routes Web (admin)
