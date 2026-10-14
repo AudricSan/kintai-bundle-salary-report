@@ -12,6 +12,7 @@
     "autoload-dev": {
         "psr-4": {
             "kintai\\": "../../Kintai/src/",
+            "kintai\\Tests\\Support\\": "../../Kintai/tests/Support/",
             "kintai\\Bundles\\Installed\\SalaryReport\\": "src/",
             "kintai\\Tests\\Bundles\\SalaryReport\\": "tests/"
         },

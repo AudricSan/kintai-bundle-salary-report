@@ -4,25 +4,25 @@ declare(strict_types=1);
 
 namespace kintai\Bundles\Installed\SalaryReport\Controllers\Web;
 
-use kintai\Core\Auth\PermissionService;
-use kintai\Core\Exceptions\ValidationException;
+use kintai\Contract\Auth\PermissionService;
+use kintai\Contract\Exceptions\ValidationException;
 use kintai\Core\Repositories\DailyReportRepositoryInterface;
 use kintai\Core\Repositories\SalaryReportRepositoryInterface;
-use kintai\Core\Repositories\ShiftRepositoryInterface;
-use kintai\Core\Repositories\ShiftTypeRepositoryInterface;
-use kintai\Core\Repositories\StoreRepositoryInterface;
-use kintai\Core\Repositories\StoreUserRepositoryInterface;
-use kintai\Core\Repositories\UserRepositoryInterface;
-use kintai\Core\Repositories\UserShiftTypeRateRepositoryInterface;
-use kintai\Core\Request;
-use kintai\Core\Response;
-use kintai\Core\Services\AuditLogger;
+use kintai\Contract\Data\ShiftRepositoryInterface;
+use kintai\Contract\Data\ShiftTypeRepositoryInterface;
+use kintai\Contract\Data\StoreRepositoryInterface;
+use kintai\Contract\Data\StoreUserRepositoryInterface;
+use kintai\Contract\Data\UserRepositoryInterface;
+use kintai\Contract\Data\UserShiftTypeRateRepositoryInterface;
+use kintai\Contract\Http\Request;
+use kintai\Contract\Http\Response;
+use kintai\Contract\Services\AuditLogger;
 use kintai\Core\Services\DailyReportDataNormalizer;
-use kintai\Core\Services\ShiftWageCalculator;
-use kintai\Core\Services\StoreStatsServiceInterface;
-use kintai\UI\Controller\Web\HasAdminAccess;
-use kintai\UI\Controller\Web\Staff\HasStaffReportCrud;
-use kintai\UI\ViewRenderer;
+use kintai\Contract\Services\ShiftWageCalculator;
+use kintai\Contract\Services\StoreStatsServiceInterface;
+use kintai\Contract\Http\Concerns\HasAdminAccess;
+use kintai\Contract\Http\Concerns\HasStaffReportCrud;
+use kintai\Contract\View\ViewRenderer;
 
 final class AdminSalaryReportController
 {

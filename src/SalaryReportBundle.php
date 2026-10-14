@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace kintai\Bundles\Installed\SalaryReport;
 
-use kintai\Core\BundleContract\Bundle;
+use kintai\Contract\Bundle;
 use kintai\Core\Repositories\SalaryReportRepositoryInterface;
 use kintai\Core\Repositories\DatabaseSalaryReportRepository;
 
@@ -30,7 +30,7 @@ final class SalaryReportBundle extends Bundle
 
     public function getVersion(): string
     {
-        return '1.0.0';
+        return '1.1.0';
     }
 
     public function getLabel(): string
