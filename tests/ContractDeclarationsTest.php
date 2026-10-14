@@ -6,88 +6,93 @@ namespace kintai\Tests\Bundles\SalaryReport;
 
 use kintai\Contract\Extension\Action;
 use kintai\Contract\Extension\NavItem;
-use kintai\Core\Auth\PermissionCatalog;
-use kintai\Core\Container;
-use kintai\Core\Extension\Actions;
-use kintai\Core\Extension\Legacy\LegacyPendingRequests;
-use kintai\Core\Extension\Navigation;
-use kintai\Core\Extension\StoreFeatures;
 use kintai\Bundles\Installed\SalaryReport\SalaryReportBundle;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Les déclarations du bundle (contrat 1.11) reproduisent exactement ce que le Core affichait pour lui en repli : les
- * déclarer ne change rien à l'écran. Quand le repli du Core disparaîtra (étape 5 du plan du contrat), ce test pourra
- * être retiré.
+ * Ce que le bundle déclare au Core. Le Core n'a plus de repli pour salary-report (étape 4 du plan du contrat,
+ * extraction) : ces déclarations sont la seule source de son entrée de menu et de ses liens « Rapport de salaire »,
+ * d'où des valeurs vérifiées une à une.
  */
 final class ContractDeclarationsTest extends TestCase
 {
-    private const SLUG = 'salary-report';
-
     private function bundle(): SalaryReportBundle
     {
         return (new \ReflectionClass(SalaryReportBundle::class))->newInstanceWithoutConstructor();
     }
 
-    /** @param list<NavItem> $items */
-    private static function navShape(array $items): array
+    public function testNavigation(): void
     {
-        return array_map(static function (NavItem $i): array {
-            $v = get_object_vars($i);
-            $v['links'] = $v['links'] !== null;
-            return $v;
-        }, $items);
+        $items = $this->bundle()->navigation();
+
+        $this->assertCount(1, $items);
+        $this->assertInstanceOf(NavItem::class, $items[0]);
+        $this->assertSame('salary_report', $items[0]->key);
+        $this->assertSame(NavItem::REPORTS, $items[0]->section);
+        $this->assertSame('salary_report', $items[0]->label);
+        $this->assertSame('admin.reports.salary', $items[0]->managerRoute);
+        $this->assertSame('admin.reports.salary', $items[0]->employeeRoute);
+        $this->assertSame('money', $items[0]->icon);
+        $this->assertSame(['*/reports/salary'], $items[0]->activePaths);
+        $this->assertNull($items[0]->storeFeature);
+        $this->assertSame(50, $items[0]->order);
     }
 
-    /** @param list<Action> $actions */
-    private static function actionShape(array $actions): array
-    {
-        $context = ['user_id' => 3, 'store_id' => 5, 'store_name' => 'S', 'period' => 30];
-        return array_map(static function (Action $a) use ($context): array {
-            $v = get_object_vars($a);
-            try {
-                $v['url'] = ($a->url)($context);
-            } catch (\Throwable $e) {
-                $v['url'] = $e::class;
-            }
-            return $v;
-        }, $actions);
-    }
-
-    public function testNavigationMatchesTheCoreFallback(): void
-    {
-        $this->assertEquals(self::navShape(Navigation::legacyBundleItems()[self::SLUG] ?? []), self::navShape($this->bundle()->navigation()));
-    }
-
-    public function testPermissionsMatchTheCoreFallback(): void
-    {
-        $expected = array_intersect_key(PermissionCatalog::CATEGORIES, array_flip(array_keys(PermissionCatalog::CATEGORY_BUNDLES, self::SLUG, true)));
-        $this->assertSame($expected, $this->bundle()->permissions());
-    }
-
-    public function testStoreFeaturesMatchTheCoreFallback(): void
-    {
-        $this->assertEquals(StoreFeatures::legacyBundleFeatures()[self::SLUG] ?? [], $this->bundle()->storeFeatures());
-    }
-
-    public function testActionsMatchTheCoreFallback(): void
+    /** Liens « Rapport de salaire » : liste des employés, fiche employé, rapport employés du magasin (en-tête et lignes). */
+    public function testActions(): void
     {
         $_SERVER['SCRIPT_NAME'] = '/index.php';
-        $this->assertEquals(self::actionShape(Actions::legacyBundleActions()[self::SLUG] ?? []), self::actionShape($this->bundle()->actions()));
+        $actions = $this->bundle()->actions();
+
+        $this->assertCount(4, $actions);
+        $expected = [
+            [Action::EMPLOYEE_ROW, '💰', Action::DEFAULT, 'payroll.generate', 10, '/admin/stores/5/reports/salary/create?user_id=3'],
+            [Action::EMPLOYEE_STORE, '', Action::DEFAULT, 'payroll.generate', 20, '/admin/stores/5/reports/salary/create?user_id=3'],
+            [Action::STORE_REPORT, '💰', Action::PRIMARY, null, 10, '/admin/stores/5/reports/salary/create'],
+            [Action::STORE_REPORT_ROW, '💰', Action::DEFAULT, null, 10, '/admin/stores/5/reports/salary/create?user_id=3'],
+        ];
+        foreach ($actions as $i => $action) {
+            $this->assertInstanceOf(Action::class, $action);
+            $this->assertSame('salary_report', $action->key);
+            $this->assertSame('salary_report', $action->label);
+            [$slot, $icon, $style, $permission, $order, $url] = $expected[$i];
+            $this->assertSame($slot, $action->slot, "slot #{$i}");
+            $this->assertSame($icon, $action->icon, "icon #{$i}");
+            $this->assertSame($style, $action->style, "style #{$i}");
+            $this->assertSame($permission, $action->permission, "permission #{$i}");
+            $this->assertSame($order, $action->order, "order #{$i}");
+            $this->assertSame($url, ($action->url)(['user_id' => 3, 'store_id' => 5, 'store_name' => 'S', 'period' => 30]), "url #{$i}");
+        }
     }
 
-    public function testPendingRequestsProvidersMatchTheCoreFallback(): void
+    /** Le bundle n'apporte rien d'autre au Core (la catégorie de permissions « payroll » est celle du Core). */
+    public function testNoOtherContribution(): void
     {
-        $legacy = LegacyPendingRequests::forBundles(Container::getInstance())[self::SLUG] ?? null;
-        $declared = $this->bundle()->pendingRequestsProviders();
+        $bundle = $this->bundle();
 
-        if ($legacy === null) {
-            $this->assertSame([], $declared);
-            return;
-        }
-        $this->assertCount(1, $declared);
-        foreach (['key', 'label', 'emptyLabel', 'permission', 'storeFeature', 'order'] as $method) {
-            $this->assertSame($legacy->{$method}(), $declared[0]->{$method}(), $method);
+        $this->assertSame([], $bundle->permissions());
+        $this->assertSame([], $bundle->storeFeatures());
+        $this->assertSame([], $bundle->dashboardWidgets());
+        $this->assertSame([], $bundle->viewVariables());
+        $this->assertSame([], $bundle->profileSections());
+        $this->assertSame([], $bundle->notificationTypes());
+        $this->assertSame([], $bundle->cronJobs());
+        $this->assertSame([], $bundle->eventListeners());
+        $this->assertSame([], $bundle->pendingRequestsProviders());
+        $this->assertSame([], $bundle->absenceProviders());
+        $this->assertSame([], $bundle->attendanceProviders());
+        $this->assertSame([], $bundle->salesProviders());
+    }
+
+    /** Libellés des déclarations et des pages, fournis par le bundle. */
+    public function testDeclaredLabelsAreTranslatedByTheBundle(): void
+    {
+        $keys = ['salary_report', 'error_salary_report_not_found', 'all_months', 'all_years', 'gross_pay', 'net_pay', 'total_deductions', 'payslip_summary', 'payslip_no_shift', 'col_day', 'col_rate_h'];
+        foreach (['fr', 'en', 'ja'] as $locale) {
+            $lang = json_decode((string) file_get_contents(dirname(__DIR__) . "/lang/{$locale}.json"), true);
+            foreach ($keys as $key) {
+                $this->assertNotEmpty($lang[$key] ?? null, "{$locale} : {$key}");
+            }
         }
     }
 }

@@ -1,5 +1,4 @@
 {
-    "error_salary_user_not_in_store": "The selected employee is not a member of this store.",
     "April": "April",
     "August": "August",
     "December": "December",
@@ -16,6 +15,15 @@
     "all_years": "All years",
     "bundle_salary_report": "Salary Report",
     "bundle_salary_report_desc": "Monthly per-store salary reports, pre-filled from daily reports and shifts.",
+    "col_day": "Day",
+    "col_rate_h": "Rate/h",
+    "error_salary_report_not_found": "Salary report not found.",
+    "error_salary_user_not_in_store": "The selected employee is not a member of this store.",
+    "gross_pay": "Gross pay",
+    "net_pay": "Net pay",
+    "payslip_no_shift": "No shifts for this period.",
+    "payslip_summary": "Summary",
+    "salary_report": "Salary Report",
     "sr_active_employees": "Active Employees",
     "sr_bank_transfer_salary": "Bank Transfer Salary",
     "sr_calc_detail": "View calculation detail",
@@ -75,5 +83,6 @@
     "sr_type_breakdown": "Breakdown by shift type",
     "sr_updated": "Salary report updated.",
     "sr_withholding_tax": "Withholding Tax",
+    "total_deductions": "Total deductions",
     "year": "Year"
 }

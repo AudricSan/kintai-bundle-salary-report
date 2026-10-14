@@ -7,21 +7,15 @@ namespace kintai\Bundles\Installed\SalaryReport;
 use kintai\Contract\Bundle;
 use kintai\Contract\Extension\Action;
 use kintai\Contract\Extension\NavItem;
-use kintai\Core\Repositories\DatabaseSalaryReportRepository;
-use kintai\Core\Repositories\SalaryReportRepositoryInterface;
+use kintai\Bundles\Installed\SalaryReport\Repositories\DatabaseSalaryReportRepository;
+use kintai\Bundles\Installed\SalaryReport\Repositories\SalaryReportRepositoryInterface;
 
 /**
- * Comme ResignationReport/ShiftClaim/StorePhoto, aucun autre composant Core
- * ne dépend de SalaryReportRepositoryInterface : le repository est enregistré
- * par ce bundle, pas par le Core. Désactiver ou désinstaller "salary-report"
- * retire entièrement la fonctionnalité.
+ * Le bundle possède son modèle, son dépôt et sa table (salary_reports) ; aucun composant du Core n'en dépend.
+ * Désactiver ou désinstaller « salary-report » retire entièrement la fonctionnalité (la table et ses données restent).
  *
- * Dépendance bundle→bundle : AdminSalaryReportController utilise
- * DailyReportRepositoryInterface (Core-bound, voir docs/architecture.md côté
- * Kintai) pour pré-remplir le chiffre d'affaires du mois depuis les rapports
- * journaliers validés/soumis (calculateSalaryPreset). Cette interface restant
- * liée par Kintai Core indépendamment du bundle "daily-report", elle se
- * résout toujours, que ce bundle soit installé ou non.
+ * Le total des ventes du mois est pré-rempli à partir des ventes journalières, lues par le contrat
+ * (kintai\Contract\Services\Sales, fournisseurs de ventes 1.14) : sans fournisseur (daily-report absent), il reste à 0.
  */
 final class SalaryReportBundle extends Bundle
 {

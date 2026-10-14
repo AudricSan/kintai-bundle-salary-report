@@ -8,11 +8,16 @@ use kintai\Bundles\Installed\SalaryReport\Controllers\Web\AdminSalaryReportContr
 use kintai\Core\Auth\PermissionService;
 use kintai\Core\Container;
 use kintai\Core\Exceptions\NotFoundException;
-use kintai\Core\Repositories\DailyReportRepositoryInterface;
+use kintai\Contract\Provider\DailySales;
+use kintai\Contract\Provider\SalesProvider;
+use kintai\Core\BundleContract\Bundle;
+use kintai\Core\BundleManager;
+use kintai\Core\Extension\ExtensionRegistry;
+use kintai\Core\Extension\Sales;
 use kintai\Core\Repositories\LogRepositoryInterface;
 use kintai\Core\Repositories\RoleAssignmentRepositoryInterface;
 use kintai\Core\Repositories\RoleRepositoryInterface;
-use kintai\Core\Repositories\SalaryReportRepositoryInterface;
+use kintai\Bundles\Installed\SalaryReport\Repositories\SalaryReportRepositoryInterface;
 use kintai\Core\Repositories\ShiftRepositoryInterface;
 use kintai\Core\Repositories\ShiftTypeRepositoryInterface;
 use kintai\Core\Repositories\StoreRepositoryInterface;
@@ -33,7 +38,8 @@ final class AdminSalaryReportControllerTest extends TestCase
     private StoreRepositoryInterface&MockObject $stores;
     private UserRepositoryInterface&MockObject $users;
     private StoreUserRepositoryInterface&MockObject $storeUsers;
-    private DailyReportRepositoryInterface&MockObject $dailyReports;
+    /** @var list<array<string, mixed>> Jours renvoyés par le fournisseur de ventes factice (rapports journaliers) */
+    private array $dailyReports = [];
     private ShiftRepositoryInterface&MockObject $shifts;
     private ShiftTypeRepositoryInterface&MockObject $shiftTypes;
     private UserShiftTypeRateRepositoryInterface&MockObject $userRates;
@@ -57,7 +63,7 @@ final class AdminSalaryReportControllerTest extends TestCase
         $this->stores = $this->createMock(StoreRepositoryInterface::class);
         $this->users = $this->createMock(UserRepositoryInterface::class);
         $this->storeUsers = $this->createMock(StoreUserRepositoryInterface::class);
-        $this->dailyReports = $this->createMock(DailyReportRepositoryInterface::class);
+        $this->dailyReports = [];
         $this->shifts = $this->createMock(ShiftRepositoryInterface::class);
         $this->shiftTypes = $this->createMock(ShiftTypeRepositoryInterface::class);
         $this->userRates = $this->createMock(UserShiftTypeRateRepositoryInterface::class);
@@ -74,7 +80,7 @@ final class AdminSalaryReportControllerTest extends TestCase
             $this->users,
             $this->salaryReports,
             $this->storeUsers,
-            $this->dailyReports,
+            $this->sales(),
             $this->shifts,
             $this->shiftTypes,
             $this->userRates,
@@ -85,6 +91,47 @@ final class AdminSalaryReportControllerTest extends TestCase
                 $this->createMock(RoleRepositoryInterface::class),
             ),
         );
+    }
+
+    /**
+     * Ventes lues par le contrat (fournisseurs, 1.14), alimentées par un fournisseur factice qui renvoie
+     * $this->dailyReports filtrés par statut, comme le fait daily-report.
+     */
+    private function sales(): Sales
+    {
+        $provider = new class(fn(): array => $this->dailyReports) implements SalesProvider {
+            public function __construct(private readonly \Closure $rows) {}
+
+            public function dailySales(int $storeId, string $from, string $to, ?array $statuses = null): array
+            {
+                $days = [];
+                foreach (($this->rows)() as $r) {
+                    if ($statuses === null || in_array($r['status'], $statuses, true)) {
+                        $days[] = new DailySales($r['report_date'], $r['status'], (float) $r['sales_total']);
+                    }
+                }
+                return $days;
+            }
+        };
+        $bundle = new class($provider) extends Bundle {
+            public function __construct(private readonly SalesProvider $provider) {}
+
+            public function getName(): string
+            {
+                return 'daily-report';
+            }
+
+            public function register(): void {}
+
+            public function salesProviders(): array
+            {
+                return [$this->provider];
+            }
+        };
+        $manager = (new \ReflectionClass(BundleManager::class))->newInstanceWithoutConstructor();
+        (new \ReflectionProperty($manager, 'bundles'))->setValue($manager, ['daily-report' => $bundle]);
+
+        return new Sales(new ExtensionRegistry($manager));
     }
 
     protected function tearDown(): void
@@ -361,7 +408,7 @@ final class AdminSalaryReportControllerTest extends TestCase
         $this->stores->method('findById')->with(1)->willReturn(['id' => 1, 'name' => 'Store A']);
         $this->storeUsers->method('findByStore')->with(1)->willReturn([]);
 
-        $this->dailyReports->method('findByStoreAndDateRange')->willReturn([
+        $this->dailyReports = ([
             ['report_date' => date('Y-m') . '-01', 'status' => 'validated', 'sales_total' => '10000'],
             ['report_date' => date('Y-m') . '-02', 'status' => 'submitted', 'sales_total' => '5000'],
             ['report_date' => date('Y-m') . '-03', 'status' => 'draft', 'sales_total' => '9999'],
@@ -389,7 +436,7 @@ final class AdminSalaryReportControllerTest extends TestCase
         $req->setRouteParams(['id' => '1']);
 
         $this->stores->method('findById')->with(1)->willReturn(['id' => 1, 'name' => 'Store A']);
-        $this->dailyReports->method('findByStoreAndDateRange')->willReturn([
+        $this->dailyReports = ([
             ['report_date' => '2026-08-01', 'status' => 'validated', 'sales_total' => 10000],
         ]);
         $this->shifts->method('findByStore')->with(1)->willReturn([
@@ -426,7 +473,7 @@ final class AdminSalaryReportControllerTest extends TestCase
         $req->setRouteParams(['id' => '1']);
 
         $this->stores->method('findById')->with(1)->willReturn(['id' => 1, 'name' => 'Store A']);
-        $this->dailyReports->method('findByStoreAndDateRange')->willReturn([]);
+        $this->dailyReports = ([]);
         $this->shifts->method('findByStore')->with(1)->willReturn([
             [
                 'shift_date' => '2026-08-05', 'start_time' => '07:00', 'end_time' => '18:00',
@@ -464,7 +511,7 @@ final class AdminSalaryReportControllerTest extends TestCase
         $req->setRouteParams(['id' => '1']);
 
         $this->stores->method('findById')->with(1)->willReturn(['id' => 1, 'name' => 'Store A']);
-        $this->dailyReports->method('findByStoreAndDateRange')->willReturn([]);
+        $this->dailyReports = ([]);
         $this->shifts->method('findByStore')->with(1)->willReturn([
             ['shift_date' => '2026-08-05', 'duration_minutes' => 480, 'pause_minutes' => 0, 'shift_type_id' => 1, 'user_id' => 7],
         ]);
@@ -525,7 +572,7 @@ final class AdminSalaryReportControllerTest extends TestCase
         $store = ['id' => 1, 'name' => 'Store A', 'daily_report_settings' => null];
         $authUser = ['id' => 1, 'display_name' => 'Manager X'];
 
-        $this->dailyReports->method('findByStoreAndDateRange')->willReturn([
+        $this->dailyReports = ([
             ['report_date' => date('Y-m') . '-01', 'status' => 'validated', 'sales_total' => 1000],
             ['report_date' => date('Y-m') . '-02', 'status' => 'validated', 'sales_total' => 2000],
         ]);
@@ -536,17 +583,19 @@ final class AdminSalaryReportControllerTest extends TestCase
         $this->assertSame(3000.0, $preset['total_payment']);
     }
 
-    public function testCalculateSalaryPresetUsesDailyDeltasInCumulativeInputMode(): void
+    /**
+     * Magasin en saisie cumulée : le fournisseur de ventes renvoie déjà les valeurs du jour (1000, 1100, 1200 pour des
+     * cumuls 1000, 2100, 3300) ; le rapport additionne ces valeurs et retrouve le total du mois, sans recompter.
+     */
+    public function testCalculateSalaryPresetSumsTheDayValuesOfACumulativeStore(): void
     {
         $store = ['id' => 1, 'name' => 'Store A', 'daily_report_settings' => json_encode(['cumulative_mode' => 'cumulative_input'])];
         $authUser = ['id' => 1, 'display_name' => 'Manager X'];
 
-        // Saisies cumulées depuis le début du mois : la dernière valeur (3300) EST le total du mois,
-        // sommer les 3 lignes brutes donnerait 6400 (faux).
-        $this->dailyReports->method('findByStoreAndDateRange')->willReturn([
+        $this->dailyReports = ([
             ['report_date' => date('Y-m') . '-01', 'status' => 'validated', 'sales_total' => 1000],
-            ['report_date' => date('Y-m') . '-02', 'status' => 'validated', 'sales_total' => 2100],
-            ['report_date' => date('Y-m') . '-03', 'status' => 'validated', 'sales_total' => 3300],
+            ['report_date' => date('Y-m') . '-02', 'status' => 'validated', 'sales_total' => 1100],
+            ['report_date' => date('Y-m') . '-03', 'status' => 'validated', 'sales_total' => 1200],
         ]);
         $this->shifts->method('findByStore')->willReturn([]);
 
@@ -570,7 +619,7 @@ final class AdminSalaryReportControllerTest extends TestCase
         $this->stores->method('findById')->with(1)->willReturn(['id' => 1, 'name' => 'Store A']);
         $this->storeUsers->method('findByStore')->with(1)->willReturn([]);
         $this->users->method('findById')->with(7)->willReturn(['id' => 7, 'last_name' => 'Dupont', 'first_name' => 'Jean']);
-        $this->dailyReports->method('findByStoreAndDateRange')->willReturn([]);
+        $this->dailyReports = ([]);
         $this->shifts->method('findByStore')->with(1)->willReturn([
             ['shift_date' => date('Y-m') . '-05', 'duration_minutes' => 480, 'estimated_salary' => 6000, 'user_id' => 7],
             ['shift_date' => date('Y-m') . '-06', 'duration_minutes' => 240, 'estimated_salary' => 3000, 'user_id' => 9],
@@ -585,7 +634,7 @@ final class AdminSalaryReportControllerTest extends TestCase
         $store = ['id' => 1, 'name' => 'Store A', 'daily_report_settings' => null];
         $authUser = ['id' => 1, 'display_name' => 'Manager X'];
 
-        $this->dailyReports->method('findByStoreAndDateRange')->willReturn([]);
+        $this->dailyReports = ([]);
         $this->shifts->method('findByStore')->willReturn([
             ['shift_date' => date('Y-m') . '-05', 'duration_minutes' => 480, 'pause_minutes' => 0, 'shift_type_id' => 1, 'user_id' => 7],
             ['shift_date' => date('Y-m') . '-06', 'duration_minutes' => 240, 'pause_minutes' => 0, 'shift_type_id' => 1, 'user_id' => 9],
@@ -608,7 +657,7 @@ final class AdminSalaryReportControllerTest extends TestCase
         $store = ['id' => 1, 'name' => 'Store A', 'daily_report_settings' => null];
         $authUser = ['id' => 1, 'display_name' => 'Manager X'];
 
-        $this->dailyReports->method('findByStoreAndDateRange')->willReturn([]);
+        $this->dailyReports = ([]);
         $this->shifts->method('findByStore')->willReturn([
             ['shift_date' => date('Y-m') . '-05', 'duration_minutes' => 480, 'pause_minutes' => 0, 'shift_type_id' => 1, 'user_id' => 7],
         ]);
@@ -642,7 +691,7 @@ final class AdminSalaryReportControllerTest extends TestCase
         $store = ['id' => 1, 'name' => 'Store A', 'daily_report_settings' => null];
         $authUser = ['id' => 1, 'display_name' => 'Manager X'];
 
-        $this->dailyReports->method('findByStoreAndDateRange')->willReturn([]);
+        $this->dailyReports = ([]);
         $this->shifts->method('findByStore')->willReturn([
             ['shift_date' => date('Y-m') . '-05', 'duration_minutes' => 480, 'pause_minutes' => 0, 'shift_type_id' => 1, 'user_id' => 7],
             ['shift_date' => date('Y-m') . '-06', 'duration_minutes' => 240, 'pause_minutes' => 0, 'shift_type_id' => 1, 'user_id' => 9],
@@ -684,7 +733,7 @@ final class AdminSalaryReportControllerTest extends TestCase
         $store = ['id' => 1, 'name' => 'Store A', 'daily_report_settings' => null];
         $authUser = ['id' => 1, 'display_name' => 'Manager X'];
 
-        $this->dailyReports->method('findByStoreAndDateRange')->willReturn([]);
+        $this->dailyReports = ([]);
         $this->shifts->method('findByStore')->willReturn([
             ['shift_date' => date('Y-m') . '-05', 'duration_minutes' => 480, 'estimated_salary' => 6000, 'user_id' => 7],
         ]);
