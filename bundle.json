@@ -1,7 +1,7 @@
 {
     "slug": "salary-report",
     "name": "Rapport de salaire",
-    "version": "1.1.0",
+    "version": "1.2.0",
     "description": "Rapports de salaire mensuels par magasin, pré-remplis depuis les rapports journaliers et les shifts.",
     "author": {
         "name": "AudricSan",
