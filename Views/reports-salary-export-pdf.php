@@ -15,7 +15,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<style>
+<style nonce="<?= csp_nonce() ?>">
 <?php
 echo file_get_contents(BASE_PATH . '/public/assets/css/pdf/pdf-brand.css');
 echo file_get_contents(BASE_PATH . '/public/assets/css/pdf/pdf-preview.css');
