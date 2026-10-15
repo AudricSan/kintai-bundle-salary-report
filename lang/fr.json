@@ -14,7 +14,7 @@
     "all_months": "Tous les mois",
     "all_years": "Toutes les années",
     "bundle_salary_report": "Rapport de salaire",
-    "bundle_salary_report_desc": "Rapports de salaire mensuels par magasin, pré-remplis depuis les rapports journaliers et les shifts.",
+    "bundle_salary_report_desc": "Rapports de salaire mensuels par magasin ou par employé, pré-remplis depuis les rapports journaliers et les shifts.",
     "col_day": "Jour",
     "col_rate_h": "Taux/h",
     "error_salary_report_not_found": "Rapport de salaire introuvable.",

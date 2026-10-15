@@ -20,6 +20,7 @@ Le schéma de version (X.Y.Z, canaux alpha/beta/main) est décrit dans
 
 ### Fixed
 
+- Description du bundle complétée (`bundle.json` et `lang/`) : un rapport de salaire peut viser un magasin ou un employé, la description ne citait que le magasin.
 - Sécurité — le `user_id` posté à la création d'un rapport de salaire n'était pas vérifié : il doit être membre du magasin du rapport.
 
 ### Changed

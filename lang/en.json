@@ -14,7 +14,7 @@
     "all_months": "All months",
     "all_years": "All years",
     "bundle_salary_report": "Salary Report",
-    "bundle_salary_report_desc": "Monthly per-store salary reports, pre-filled from daily reports and shifts.",
+    "bundle_salary_report_desc": "Monthly salary reports per store or per employee, pre-filled from daily reports and shifts.",
     "col_day": "Day",
     "col_rate_h": "Rate/h",
     "error_salary_report_not_found": "Salary report not found.",
