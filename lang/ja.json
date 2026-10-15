@@ -14,7 +14,7 @@
     "all_months": "全月",
     "all_years": "全年度",
     "bundle_salary_report": "給与報告書",
-    "bundle_salary_report_desc": "日報とシフトから自動入力される、店舗ごとの月次給与報告書。",
+    "bundle_salary_report_desc": "日報とシフトから自動入力される、店舗ごと・従業員ごとの月次給与報告書。",
     "col_day": "曜日",
     "col_rate_h": "時給",
     "error_salary_report_not_found": "給与レポートが見つかりません。",
