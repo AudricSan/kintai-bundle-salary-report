@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-use kintai\UI\Components\Button;
-use kintai\UI\Components\Card;
-use kintai\UI\Components\Modal;
+use kintai\Contract\View\Components\Button;
+use kintai\Contract\View\Components\Card;
+use kintai\Contract\View\Components\Modal;
 
 /**
  * @var array  $store

@@ -1,5 +1,4 @@
 {
-    "error_salary_user_not_in_store": "L’employé choisi n’est pas membre de ce magasin.",
     "April": "Avril",
     "August": "Août",
     "December": "Décembre",
@@ -15,7 +14,16 @@
     "all_months": "Tous les mois",
     "all_years": "Toutes les années",
     "bundle_salary_report": "Rapport de salaire",
-    "bundle_salary_report_desc": "Rapports de salaire mensuels par magasin, pré-remplis depuis les rapports journaliers et les shifts.",
+    "bundle_salary_report_desc": "Rapports de salaire mensuels par magasin ou par employé, pré-remplis depuis les rapports journaliers et les shifts.",
+    "col_day": "Jour",
+    "col_rate_h": "Taux/h",
+    "error_salary_report_not_found": "Rapport de salaire introuvable.",
+    "error_salary_user_not_in_store": "L’employé choisi n’est pas membre de ce magasin.",
+    "gross_pay": "Salaire brut",
+    "net_pay": "Net à payer",
+    "payslip_no_shift": "Aucun shift sur cette période.",
+    "payslip_summary": "Récapitulatif",
+    "salary_report": "Rapport de salaire",
     "sr_active_employees": "Employés actifs",
     "sr_bank_transfer_salary": "Salaire versé par virement",
     "sr_calc_detail": "Voir le détail des calculs",
@@ -75,5 +83,6 @@
     "sr_type_breakdown": "Répartition par type d'horaire",
     "sr_updated": "Rapport de salaire mis à jour.",
     "sr_withholding_tax": "Impôt à la source",
+    "total_deductions": "Total déductions",
     "year": "Année"
 }
