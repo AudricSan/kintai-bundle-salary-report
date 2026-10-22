@@ -161,7 +161,7 @@ echo file_get_contents(bundle_asset_path('salary-report', 'css/pdf-salary-report
 <?php if (empty($shiftRows)): ?>
 <p><?= __('payslip_no_shift') ?></p>
 <?php else: ?>
-<?php include BASE_PATH . '/src/UI/View/_partials/_payslip-helpers.php'; ?>
+<?php include __DIR__ . '/_payslip-helpers.php'; ?>
 <table>
     <tr>
         <th><?= __('col_day') ?></th>
