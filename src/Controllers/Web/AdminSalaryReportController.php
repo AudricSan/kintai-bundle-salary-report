@@ -32,7 +32,7 @@ final class AdminSalaryReportController
         'entity'    => 'salary_report',
         'slug'      => 'salary',
         'view'      => 'salary-report::reports-salary',
-        'not_found' => 'error_salary_report_not_found',
+        'not_found' => 'salary_report_error_not_found',
         'fields'    => [
             'target_month'          => 'str',
             'store_name'            => 'str',
@@ -107,7 +107,7 @@ final class AdminSalaryReportController
         }
 
         return Response::html($this->view->render('salary-report::reports-salary', [
-            'title'       => __('sr_title'),
+            'title'       => __('salary_report_sr_title'),
             'stores'      => $allStores,
             'store_members_by_store' => $membersByStore,
             'filter_store_id' => $filterStoreId,
@@ -120,7 +120,7 @@ final class AdminSalaryReportController
 
     public function salaryReports(Request $request): Response
     {
-        return $this->listReports($request, __('sr_title'));
+        return $this->listReports($request, __('salary_report_sr_title'));
     }
 
     // -------------------------------------------------------------------------
@@ -241,7 +241,7 @@ final class AdminSalaryReportController
         }
 
         return Response::html($this->view->render('salary-report::reports-salary-form', [
-            'title'   => __('sr_new') . ' — ' . ($store['name'] ?? ''),
+            'title'   => __('salary_report_sr_new') . ' — ' . ($store['name'] ?? ''),
             'store'   => $store,
             'mode'    => 'create',
             'report'  => $preset,
@@ -288,7 +288,7 @@ final class AdminSalaryReportController
         $targetMonth = $request->post('target_month', '');
         $userId = (int) $request->post('user_id', 0);
         if ($userId > 0 && $this->storeUsers->findMembership($storeId, $userId) === null) {
-            throw new ValidationException(['user_id' => __('error_salary_user_not_in_store')]);
+            throw new ValidationException(['user_id' => __('salary_report_error_salary_user_not_in_store')]);
         }
 
         $existing = $this->salaryReports->findByStoreAndMonth($storeId, $targetMonth, $userId ?: null);
@@ -356,12 +356,12 @@ final class AdminSalaryReportController
 
     protected function reportShowTitle(array $report): string
     {
-        return __('sr_title') . ' — ' . ($report['target_month'] ?? '');
+        return __('salary_report_sr_title') . ' — ' . ($report['target_month'] ?? '');
     }
 
     protected function reportEditTitle(): string
     {
-        return __('sr_edit');
+        return __('salary_report_sr_edit');
     }
 
     protected function reportEditExtras(int $storeId, array $report): array

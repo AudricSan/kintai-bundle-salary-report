@@ -87,7 +87,7 @@ final class ContractDeclarationsTest extends TestCase
     /** Libellés des déclarations et des pages, fournis par le bundle. */
     public function testDeclaredLabelsAreTranslatedByTheBundle(): void
     {
-        $keys = ['salary_report', 'error_salary_report_not_found', 'all_months', 'all_years', 'gross_pay', 'net_pay', 'total_deductions', 'payslip_summary', 'payslip_no_shift', 'col_day', 'col_rate_h'];
+        $keys = ['salary_report', 'salary_report_error_not_found', 'salary_report_all_months', 'salary_report_all_years', 'salary_report_gross_pay', 'salary_report_net_pay', 'salary_report_total_deductions', 'salary_report_payslip_summary', 'salary_report_payslip_no_shift', 'salary_report_col_day', 'salary_report_col_rate_h'];
         foreach (['fr', 'en', 'ja'] as $locale) {
             $lang = json_decode((string) file_get_contents(dirname(__DIR__) . "/lang/{$locale}.json"), true);
             foreach ($keys as $key) {

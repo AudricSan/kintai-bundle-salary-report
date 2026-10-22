@@ -75,15 +75,15 @@ $months = [
 ];
 
 echo Flash::fromQuery('success', [
-    'created' => __('sr_created'),
-    'updated' => __('sr_updated'),
-    'deleted' => __('sr_deleted'),
+    'created' => __('salary_report_sr_created'),
+    'updated' => __('salary_report_sr_updated'),
+    'deleted' => __('salary_report_sr_deleted'),
 ])->render();
 ?>
 
 <div class="page-header">
     <h2 class="page-header__title">
-        <?= __('sr_title') ?><?php if (!$allMode): ?> — <?= htmlspecialchars($store['name'] ?? '') ?><?php endif; ?>
+        <?= __('salary_report_sr_title') ?><?php if (!$allMode): ?> — <?= htmlspecialchars($store['name'] ?? '') ?><?php endif; ?>
     </h2>
     <div class="page-header__actions">
         <?php if ($allMode):
@@ -100,11 +100,11 @@ echo Flash::fromQuery('success', [
         <?php endif; ?>
         <?php if (!$allMode): ?>
         <details class="store-picker">
-            <summary class="btn btn--primary">+ <?= __('sr_new') ?></summary>
+            <summary class="btn btn--primary">+ <?= __('salary_report_sr_new') ?></summary>
             <div class="store-picker__panel">
-                <a class="store-picker__item" href="<?= htmlspecialchars($createBase . '/create') ?>">🏬 <?= __('sr_new_store_wide') ?></a>
+                <a class="store-picker__item" href="<?= htmlspecialchars($createBase . '/create') ?>">🏬 <?= __('salary_report_sr_new_store_wide') ?></a>
                 <?php if ($store_members !== []): ?>
-                    <div class="store-picker__title"><?= __('sr_new_for_employee') ?></div>
+                    <div class="store-picker__title"><?= __('salary_report_sr_new_for_employee') ?></div>
                     <?php foreach ($store_members as $m): ?>
                         <?php $mName = trim(($m['last_name'] ?? '') . ' ' . ($m['first_name'] ?? '')) ?: ($m['display_name'] ?? $m['email'] ?? '#' . $m['id']); ?>
                         <a class="store-picker__item" href="<?= htmlspecialchars($createBase . '/create?user_id=' . (int) $m['id']) ?>"><?= htmlspecialchars($mName) ?></a>
@@ -113,7 +113,7 @@ echo Flash::fromQuery('success', [
             </div>
         </details>
         <?php else: ?>
-        <button type="button" class="btn btn--primary" data-on-click="srOpenCreateModal">+ <?= __('sr_new') ?></button>
+        <button type="button" class="btn btn--primary" data-on-click="srOpenCreateModal">+ <?= __('salary_report_sr_new') ?></button>
         <?php endif; ?>
         <?php if (!$allMode): ?>
         <?= Button::make('← ' . __('back'))->ghost()->sm()->link(back_url($BASE_URL . '/admin/stores/' . $storeId . '/edit'))->render() ?>
@@ -141,7 +141,7 @@ echo Flash::fromQuery('success', [
             <div class="shifts-filters__group">
                 <label class="shifts-filters__label" for="sf-year"><?= __('year') ?></label>
                 <select id="sf-year" name="year" class="form-control form-control-sm" data-submit-on-change>
-                    <option value=""><?= __('all_years') ?></option>
+                    <option value=""><?= __('salary_report_all_years') ?></option>
                     <?php foreach ($years as $y): ?>
                         <option value="<?= $y ?>" <?= (string) $y === $filter_year ? 'selected' : '' ?>><?= $y ?></option>
                     <?php endforeach; ?>
@@ -151,7 +151,7 @@ echo Flash::fromQuery('success', [
             <div class="shifts-filters__group">
                 <label class="shifts-filters__label" for="sf-month"><?= __('month') ?></label>
                 <select id="sf-month" name="month" class="form-control form-control-sm" data-submit-on-change>
-                    <option value=""><?= __('all_months') ?></option>
+                    <option value=""><?= __('salary_report_all_months') ?></option>
                     <?php foreach ($months as $val => $label): ?>
                         <option value="<?= $val ?>" <?= $val === $filter_month ? 'selected' : '' ?>><?= $label ?></option>
                     <?php endforeach; ?>
@@ -159,7 +159,7 @@ echo Flash::fromQuery('success', [
             </div>
 
             <div class="shifts-filters__group">
-                <label class="shifts-filters__label" for="sf-person"><?= __('sr_person_in_charge') ?></label>
+                <label class="shifts-filters__label" for="sf-person"><?= __('salary_report_sr_person_in_charge') ?></label>
                 <input type="text" id="sf-person" name="person" class="form-control form-control-sm" value="<?= htmlspecialchars($filter_person) ?>">
             </div>
 
@@ -174,29 +174,29 @@ echo Flash::fromQuery('success', [
 
 <div class="card">
 <?php if (empty($reports)): ?>
-    <div class="empty-state empty-state--salary"><?= __('sr_empty') ?></div>
+    <div class="empty-state empty-state--salary"><?= __('salary_report_sr_empty') ?></div>
 <?php else:
     $tbl = Table::make()
         ->data($reports)
-        ->emptyMessage(__('sr_empty'))
+        ->emptyMessage(__('salary_report_sr_empty'))
         ->rowUrl(fn($r) => $BASE_URL . '/admin/stores/' . (int) ($r['store_id'] ?? 0) . '/reports/salary/' . (int) $r['id']);
     if ($allMode):
         $tbl->column(__('store'), fn($r) => htmlspecialchars($storeNames[(int) ($r['store_id'] ?? 0)] ?? '—'));
     endif;
     echo $tbl
         ->currentSort($sort ?? 'target_month_desc')
-        ->sortable(__('sr_target_month'), 'target_month', fn($r) => htmlspecialchars($r['target_month'] ?? ''))
+        ->sortable(__('salary_report_sr_target_month'), 'target_month', fn($r) => htmlspecialchars($r['target_month'] ?? ''))
         ->column(__('employee_name'), fn($r) => !empty($r['user_id']) ? htmlspecialchars($r['employee_name'] ?? '—') : '<span class="text-muted">—</span>')
-        ->sortable(__('sr_person_in_charge'), 'person_in_charge', fn($r) => htmlspecialchars($r['person_in_charge'] ?? '—'))
-        ->sortable(__('sr_total_payment'), 'total_payment', function ($r) use ($rowCurrency) {
+        ->sortable(__('salary_report_sr_person_in_charge'), 'person_in_charge', fn($r) => htmlspecialchars($r['person_in_charge'] ?? '—'))
+        ->sortable(__('salary_report_sr_total_payment'), 'total_payment', function ($r) use ($rowCurrency) {
             $c = $rowCurrency($r);
             return '<span class="td-mono">' . format_currency((float) ($r['total_payment'] ?? 0), $c['currency'], $c['style']) . '</span>';
         }, 'td-right')
-        ->sortable(__('sr_net_payment'), 'net_payment', function ($r) use ($rowCurrency) {
+        ->sortable(__('salary_report_sr_net_payment'), 'net_payment', function ($r) use ($rowCurrency) {
             $c = $rowCurrency($r);
             return '<span class="td-mono">' . format_currency((float) ($r['net_payment'] ?? 0), $c['currency'], $c['style']) . '</span>';
         }, 'td-right')
-        ->column(__('sr_active_employees'), fn($r) => '<span class="td-mono">' . ((int) ($r['active_employees'] ?? 0)) . '</span>', 'td-right')
+        ->column(__('salary_report_sr_active_employees'), fn($r) => '<span class="td-mono">' . ((int) ($r['active_employees'] ?? 0)) . '</span>', 'td-right')
         ->column(__('actions'), function($r) use ($BASE_URL) {
             $rid = (int) $r['id'];
             $sid = (int) ($r['store_id'] ?? 0);
@@ -204,11 +204,11 @@ echo Flash::fromQuery('success', [
             $html = '<div class="btn-group">';
             $html .= Button::make(__('view'))->ghost()->sm()->link($base)->render();
             $html .= Button::make(__('edit'))->ghost()->sm()->link($base . '/edit')->render();
-            $html .= '<form method="POST" action="' . htmlspecialchars($base . '/delete') . '" class="form-inline" data-confirm="' . htmlspecialchars(__('sr_confirm_delete'), ENT_QUOTES) . '">';
+            $html .= '<form method="POST" action="' . htmlspecialchars($base . '/delete') . '" class="form-inline" data-confirm="' . htmlspecialchars(__('salary_report_sr_confirm_delete'), ENT_QUOTES) . '">';
             $html .= csrf_field();
             $html .= Button::make(__('delete'))->danger()->sm()->submit()->render();
             $html .= '</form>';
-            $html .= Button::make(__('sr_pdf'))->ghost()->sm()->link($base . '/pdf')->attrs(['target' => '_blank'])->render();
+            $html .= Button::make(__('salary_report_sr_pdf'))->ghost()->sm()->link($base . '/pdf')->attrs(['target' => '_blank'])->render();
             $html .= '</div>';
             return $html;
         })
@@ -220,10 +220,10 @@ endif; ?>
 ob_start();
 ?>
 <div id="sr-step-choice">
-    <p class="text-muted mb-sm"><?= __('sr_new_choice_intro') ?></p>
+    <p class="text-muted mb-sm"><?= __('salary_report_sr_new_choice_intro') ?></p>
     <div class="sr-choice-row">
-        <button type="button" class="btn btn--outline sr-choice-btn" data-on-click="srShowStep" data-args='["store"]'>🏬<br><?= __('sr_new_store_wide') ?></button>
-        <button type="button" class="btn btn--outline sr-choice-btn" data-on-click="srShowStep" data-args='["employee"]'>👤<br><?= __('sr_new_for_employee') ?></button>
+        <button type="button" class="btn btn--outline sr-choice-btn" data-on-click="srShowStep" data-args='["store"]'>🏬<br><?= __('salary_report_sr_new_store_wide') ?></button>
+        <button type="button" class="btn btn--outline sr-choice-btn" data-on-click="srShowStep" data-args='["employee"]'>👤<br><?= __('salary_report_sr_new_for_employee') ?></button>
     </div>
 </div>
 <div id="sr-step-store" class="hidden">
@@ -242,7 +242,7 @@ ob_start();
     <?php endif; ?>
     <div id="sr-employee-list" class="store-picker__panel store-picker__panel--static">
         <?php if ($store_members_by_store === []): ?>
-            <p class="text-muted"><?= __('sr_no_employees') ?></p>
+            <p class="text-muted"><?= __('salary_report_sr_no_employees') ?></p>
         <?php endif; ?>
         <?php foreach ($store_members_by_store as $sid => $members): ?>
             <div class="store-picker__title"><?= htmlspecialchars($storeNames[$sid] ?? ('#' . $sid)) ?></div>
@@ -255,7 +255,7 @@ ob_start();
 </div>
 <?php
 $srModalBody = ob_get_clean();
-echo Modal::make('sr-create-modal')->title(__('sr_new'))->body($srModalBody)->render();
+echo Modal::make('sr-create-modal')->title(__('salary_report_sr_new'))->body($srModalBody)->render();
 ?>
 <script nonce="<?= function_exists('csp_nonce') ? csp_nonce() : '' ?>">
 function srShowStep(step) {
