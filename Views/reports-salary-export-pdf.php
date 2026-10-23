@@ -15,7 +15,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<style>
+<style nonce="<?= csp_nonce() ?>">
 <?php
 echo file_get_contents(BASE_PATH . '/public/assets/css/pdf/pdf-brand.css');
 echo file_get_contents(BASE_PATH . '/public/assets/css/pdf/pdf-preview.css');
@@ -28,17 +28,17 @@ echo file_get_contents(BASE_PATH . '/public/assets/css/pdf/pdf-export-table.css'
 <?php include BASE_PATH . '/src/UI/View/_partials/_pdf-preview-toolbar.php'; ?>
 <div class="pdf-preview-page">
 
-<h1><?= __('sr_title') ?></h1>
+<h1><?= __('salary_report_sr_title') ?></h1>
 <div class="subtitle"><?= count($reports) ?> — <?= htmlspecialchars($generated_at) ?></div>
 
 <table>
     <tr>
         <th><?= __('store') ?></th>
-        <th><?= __('sr_target_month') ?></th>
-        <th><?= __('sr_person_in_charge') ?></th>
-        <th class="td-right"><?= __('sr_total_payment') ?></th>
-        <th class="td-right"><?= __('sr_net_payment') ?></th>
-        <th class="td-right"><?= __('sr_active_employees') ?></th>
+        <th><?= __('salary_report_sr_target_month') ?></th>
+        <th><?= __('salary_report_sr_person_in_charge') ?></th>
+        <th class="td-right"><?= __('salary_report_sr_total_payment') ?></th>
+        <th class="td-right"><?= __('salary_report_sr_net_payment') ?></th>
+        <th class="td-right"><?= __('salary_report_sr_active_employees') ?></th>
     </tr>
     <?php foreach ($reports as $r): ?>
     <tr>

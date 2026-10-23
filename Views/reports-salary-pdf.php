@@ -24,7 +24,7 @@ $isEmployeeScoped = !empty($report['user_id']);
 <html>
 <head>
 <meta charset="UTF-8">
-<style>
+<style nonce="<?= csp_nonce() ?>">
 <?php
 echo file_get_contents(BASE_PATH . '/public/assets/css/pdf/pdf-base.css');
 echo file_get_contents(BASE_PATH . '/public/assets/css/pdf/pdf-brand.css');
@@ -38,17 +38,17 @@ echo file_get_contents(bundle_asset_path('salary-report', 'css/pdf-salary-report
 <?php include BASE_PATH . '/src/UI/View/_partials/_pdf-preview-toolbar.php'; ?>
 <div class="pdf-preview-page">
 
-<h1><?= __('sr_pdf_title') ?></h1>
+<h1><?= __('salary_report_sr_pdf_title') ?></h1>
 <p class="subtitle">
     <?= htmlspecialchars($store['name'] ?? '') ?> —
     <?= $fmt($report['target_month'] ?? '') ?>
 </p>
 
 <!-.- Informations de base -->
-<h2><?= __('sr_section_basic') ?></h2>
+<h2><?= __('salary_report_sr_section_basic') ?></h2>
 <table>
     <tr>
-        <th class="pdf-w-30"><?= __('sr_target_month') ?></th>
+        <th class="pdf-w-30"><?= __('salary_report_sr_target_month') ?></th>
         <td><?= $fmt($report['target_month'] ?? '') ?></td>
     </tr>
     <tr>
@@ -62,94 +62,94 @@ echo file_get_contents(bundle_asset_path('salary-report', 'css/pdf-salary-report
     </tr>
     <?php endif; ?>
     <tr>
-        <th><?= __('sr_person_in_charge') ?></th>
+        <th><?= __('salary_report_sr_person_in_charge') ?></th>
         <td><?= $fmt($report['person_in_charge'] ?? '') ?></td>
     </tr>
 </table>
 
 <!-.- Résumé financier -->
-<h2><?= __('sr_section_financial') ?></h2>
+<h2><?= __('salary_report_sr_section_financial') ?></h2>
 <table>
     <?php if (!$isEmployeeScoped): ?>
     <tr>
-        <th class="pdf-w-50"><?= __('sr_total_payment') ?></th>
+        <th class="pdf-w-50"><?= __('salary_report_sr_total_payment') ?></th>
         <td class="tr td-mono"><?= $cur($report['total_payment'] ?? null) ?></td>
     </tr>
     <?php endif; ?>
     <tr>
-        <th><?= __('sr_total_deductions') ?></th>
+        <th><?= __('salary_report_sr_total_deductions') ?></th>
         <td class="tr td-mono"><?= $cur($report['total_deductions'] ?? null) ?></td>
     </tr>
     <tr>
-        <th class="pdf-pl-16"><?= __('sr_income_tax_base') ?></th>
+        <th class="pdf-pl-16"><?= __('salary_report_sr_income_tax_base') ?></th>
         <td class="tr td-mono"><?= $cur($report['income_tax_base'] ?? null) ?></td>
     </tr>
     <tr>
-        <th class="pdf-pl-16"><?= __('sr_withholding_tax') ?></th>
+        <th class="pdf-pl-16"><?= __('salary_report_sr_withholding_tax') ?></th>
         <td class="tr td-mono"><?= $cur($report['withholding_tax'] ?? null) ?></td>
     </tr>
     <tr>
-        <th class="pdf-pl-16"><?= __('sr_residence_tax') ?></th>
+        <th class="pdf-pl-16"><?= __('salary_report_sr_residence_tax') ?></th>
         <td class="tr td-mono"><?= $cur($report['residence_tax'] ?? null) ?></td>
     </tr>
     <tr>
-        <th class="pdf-pl-16"><?= __('sr_other_deductions') ?></th>
+        <th class="pdf-pl-16"><?= __('salary_report_sr_other_deductions') ?></th>
         <td class="tr td-mono"><?= $cur($report['other_deductions'] ?? null) ?></td>
     </tr>
     <tr class="pdf-row-highlight">
-        <th><?= __('sr_net_payment') ?></th>
+        <th><?= __('salary_report_sr_net_payment') ?></th>
         <td class="tr td-mono"><?= $cur($report['net_payment'] ?? null) ?></td>
     </tr>
     <tr>
-        <th><?= __('sr_hand_delivered_salary') ?></th>
+        <th><?= __('salary_report_sr_hand_delivered_salary') ?></th>
         <td class="tr td-mono"><?= $cur($report['hand_delivered_salary'] ?? null) ?></td>
     </tr>
     <tr>
-        <th><?= __('sr_bank_transfer_salary') ?></th>
+        <th><?= __('salary_report_sr_bank_transfer_salary') ?></th>
         <td class="tr td-mono"><?= $cur($report['bank_transfer_salary'] ?? null) ?></td>
     </tr>
     <?php if (!$isEmployeeScoped): ?>
     <tr>
-        <th><?= __('sr_active_employees') ?></th>
+        <th><?= __('salary_report_sr_active_employees') ?></th>
         <td class="tr td-mono"><?= $fmt($report['active_employees'] ?? null) ?></td>
     </tr>
     <?php endif; ?>
 </table>
 
 <!-.- Personnel -->
-<h2><?= __('sr_section_staff') ?></h2>
+<h2><?= __('salary_report_sr_section_staff') ?></h2>
 <table>
     <tr>
-        <th class="pdf-w-50"><?= __('sr_staff_man_hours') ?></th>
+        <th class="pdf-w-50"><?= __('salary_report_sr_staff_man_hours') ?></th>
         <td class="tr td-mono"><?= $fmt($report['staff_man_hours'] ?? null) ?> <?= __('hours_unit') ?></td>
     </tr>
     <tr>
-        <th><?= __('sr_staff_total_payment') ?></th>
+        <th><?= __('salary_report_sr_staff_total_payment') ?></th>
         <td class="tr td-mono"><?= $cur($report['staff_total_payment'] ?? null) ?></td>
     </tr>
     <tr>
-        <th><?= __('sr_staff_avg_hourly_wage') ?></th>
+        <th><?= __('salary_report_sr_staff_avg_hourly_wage') ?></th>
         <td class="tr td-mono"><?= $cur($report['staff_avg_hourly_wage'] ?? null) ?><?= ($report['staff_avg_hourly_wage'] ?? null) !== null && ($report['staff_avg_hourly_wage'] ?? '') !== '' ? __('per_hour_unit') : '' ?></td>
     </tr>
     <tr>
-        <th><?= __('sr_employee_work_hours') ?></th>
+        <th><?= __('salary_report_sr_employee_work_hours') ?></th>
         <td><?= nl2br($fmt($report['employee_work_hours'] ?? null, '')) ?></td>
     </tr>
     <?php if (!$isEmployeeScoped): ?>
     <tr>
-        <th><?= __('sr_new_hires') ?></th>
+        <th><?= __('salary_report_sr_new_hires') ?></th>
         <td class="tr td-mono"><?= $fmt($report['new_hires'] ?? null) ?></td>
     </tr>
     <?php endif; ?>
     <?php if (!$isEmployeeScoped): ?>
     <tr>
-        <th><?= __('sr_resigned_staff') ?></th>
+        <th><?= __('salary_report_sr_resigned_staff') ?></th>
         <td class="tr td-mono"><?= $fmt($report['resigned_staff'] ?? null) ?></td>
     </tr>
     <?php endif; ?>
     <?php if (!empty($report['hire_registrations'])): ?>
     <tr>
-        <th><?= __('sr_hire_registrations') ?></th>
+        <th><?= __('salary_report_sr_hire_registrations') ?></th>
         <td><?= nl2br($fmt($report['hire_registrations'], '')) ?></td>
     </tr>
     <?php endif; ?>
@@ -157,14 +157,14 @@ echo file_get_contents(bundle_asset_path('salary-report', 'css/pdf-salary-report
 
 <?php if (isset($shiftRows)): ?>
 <!-.- Détail des shifts (employé) -->
-<h2><?= __('sr_shift_detail') ?></h2>
+<h2><?= __('salary_report_sr_shift_detail') ?></h2>
 <?php if (empty($shiftRows)): ?>
-<p><?= __('payslip_no_shift') ?></p>
+<p><?= __('salary_report_payslip_no_shift') ?></p>
 <?php else: ?>
-<?php include BASE_PATH . '/src/UI/View/_partials/_payslip-helpers.php'; ?>
+<?php include __DIR__ . '/_payslip-helpers.php'; ?>
 <table>
     <tr>
-        <th><?= __('col_day') ?></th>
+        <th><?= __('salary_report_col_day') ?></th>
         <th><?= __('date') ?></th>
         <th><?= __('shift_type') ?></th>
         <th><?= __('schedule') ?></th>
@@ -172,7 +172,7 @@ echo file_get_contents(bundle_asset_path('salary-report', 'css/pdf-salary-report
         <th class="tr"><?= __('pause') ?></th>
         <th class="tr"><?= __('net_h_col') ?></th>
         <?php if ($anyRate): ?>
-        <th class="tr"><?= __('col_rate_h') ?></th>
+        <th class="tr"><?= __('salary_report_col_rate_h') ?></th>
         <th class="tr"><?= __('amount') ?></th>
         <?php endif; ?>
     </tr>
@@ -203,7 +203,7 @@ echo file_get_contents(bundle_asset_path('salary-report', 'css/pdf-salary-report
     </tr>
 </table>
 <?php if (!empty($type_breakdown)): ?>
-<h2><?= __('sr_type_breakdown') ?></h2>
+<h2><?= __('salary_report_sr_type_breakdown') ?></h2>
 <table>
     <tr>
         <th><?= __('shift_type') ?></th>
@@ -220,10 +220,10 @@ echo file_get_contents(bundle_asset_path('salary-report', 'css/pdf-salary-report
 </table>
 <?php endif; ?>
 <?php if ($deductionsEnabled && !empty($deductions)): ?>
-<h2><?= __('payslip_summary') ?></h2>
+<h2><?= __('salary_report_payslip_summary') ?></h2>
 <table>
     <tr>
-        <th class="pdf-w-70"><?= __('gross_pay') ?></th>
+        <th class="pdf-w-70"><?= __('salary_report_gross_pay') ?></th>
         <td class="tr td-mono"><?= format_currency($totalCost, $currency, $currencyStyle) ?></td>
     </tr>
     <?php foreach ($deductions as $ded): ?>
@@ -236,11 +236,11 @@ echo file_get_contents(bundle_asset_path('salary-report', 'css/pdf-salary-report
     </tr>
     <?php endforeach; ?>
     <tr class="pdf-bold">
-        <th><?= __('total_deductions') ?></th>
+        <th><?= __('salary_report_total_deductions') ?></th>
         <td class="tr td-mono">−<?= format_currency($totalDeductions, $currency, $currencyStyle) ?></td>
     </tr>
     <tr class="pdf-row-highlight">
-        <th><?= __('net_pay') ?></th>
+        <th><?= __('salary_report_net_pay') ?></th>
         <td class="tr td-mono"><?= format_currency($netPay, $currency, $currencyStyle) ?></td>
     </tr>
 </table>
@@ -250,7 +250,7 @@ echo file_get_contents(bundle_asset_path('salary-report', 'css/pdf-salary-report
 
 <?php if (!empty($report['remarks'])): ?>
 <!-.- Remarques -->
-<h2><?= __('sr_section_notes') ?></h2>
+<h2><?= __('salary_report_sr_section_notes') ?></h2>
 <p><?= nl2br($fmt($report['remarks'], '')) ?></p>
 <?php endif; ?>
 
@@ -259,17 +259,17 @@ echo file_get_contents(bundle_asset_path('salary-report', 'css/pdf-salary-report
     <table>
         <tr>
             <td class="pdf-center">
-                <div><?= __('sr_pdf_prepared_by') ?></div>
+                <div><?= __('salary_report_sr_pdf_prepared_by') ?></div>
                 <div class="sig-line"></div>
                 <div><?= $fmt($report['person_in_charge'] ?? '') ?></div>
             </td>
             <td class="pdf-center">
-                <div><?= __('sr_pdf_approved_by') ?></div>
+                <div><?= __('salary_report_sr_pdf_approved_by') ?></div>
                 <div class="sig-line"></div>
                 <div><?= htmlspecialchars($store['name'] ?? '') ?></div>
             </td>
             <td class="pdf-center">
-                <div><?= __('sr_pdf_date') ?></div>
+                <div><?= __('salary_report_sr_pdf_date') ?></div>
                 <div class="sig-line"></div>
                 <div><?= date('Y/m/d') ?></div>
             </td>
@@ -278,7 +278,7 @@ echo file_get_contents(bundle_asset_path('salary-report', 'css/pdf-salary-report
 </div>
 
 <div class="footer">
-    <?= __('sr_pdf_footer', ['store' => htmlspecialchars($store['name'] ?? ''), 'date' => date('Y/m/d H:i')]) ?>
+    <?= __('salary_report_sr_pdf_footer', ['store' => htmlspecialchars($store['name'] ?? ''), 'date' => date('Y/m/d H:i')]) ?>
 </div>
 
 </div>

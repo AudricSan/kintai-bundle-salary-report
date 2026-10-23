@@ -4,24 +4,24 @@ declare(strict_types=1);
 
 namespace kintai\Bundles\Installed\SalaryReport\Controllers\Web;
 
-use kintai\Core\Auth\PermissionService;
-use kintai\Core\Repositories\DailyReportRepositoryInterface;
-use kintai\Core\Repositories\SalaryReportRepositoryInterface;
-use kintai\Core\Repositories\ShiftRepositoryInterface;
-use kintai\Core\Repositories\ShiftTypeRepositoryInterface;
-use kintai\Core\Repositories\StoreRepositoryInterface;
-use kintai\Core\Repositories\StoreUserRepositoryInterface;
-use kintai\Core\Repositories\UserRepositoryInterface;
-use kintai\Core\Repositories\UserShiftTypeRateRepositoryInterface;
-use kintai\Core\Request;
-use kintai\Core\Response;
-use kintai\Core\Services\AuditLogger;
-use kintai\Core\Services\DailyReportDataNormalizer;
-use kintai\Core\Services\ShiftWageCalculator;
-use kintai\Core\Services\StoreStatsServiceInterface;
-use kintai\UI\Controller\Web\HasAdminAccess;
-use kintai\UI\Controller\Web\Staff\HasStaffReportCrud;
-use kintai\UI\ViewRenderer;
+use kintai\Contract\Auth\PermissionService;
+use kintai\Contract\Exceptions\ValidationException;
+use kintai\Bundles\Installed\SalaryReport\Repositories\SalaryReportRepositoryInterface;
+use kintai\Contract\Data\ShiftRepositoryInterface;
+use kintai\Contract\Data\ShiftTypeRepositoryInterface;
+use kintai\Contract\Data\StoreRepositoryInterface;
+use kintai\Contract\Data\StoreUserRepositoryInterface;
+use kintai\Contract\Data\UserRepositoryInterface;
+use kintai\Contract\Data\UserShiftTypeRateRepositoryInterface;
+use kintai\Contract\Http\Request;
+use kintai\Contract\Http\Response;
+use kintai\Contract\Services\AuditLogger;
+use kintai\Contract\Services\Sales;
+use kintai\Contract\Services\ShiftWageCalculator;
+use kintai\Contract\Services\StoreStatsServiceInterface;
+use kintai\Contract\Http\Concerns\HasAdminAccess;
+use kintai\Contract\Http\Concerns\HasStaffReportCrud;
+use kintai\Contract\View\ViewRenderer;
 
 final class AdminSalaryReportController
 {
@@ -32,7 +32,7 @@ final class AdminSalaryReportController
         'entity'    => 'salary_report',
         'slug'      => 'salary',
         'view'      => 'salary-report::reports-salary',
-        'not_found' => 'error_salary_report_not_found',
+        'not_found' => 'salary_report_error_not_found',
         'fields'    => [
             'target_month'          => 'str',
             'store_name'            => 'str',
@@ -65,7 +65,7 @@ final class AdminSalaryReportController
         private readonly UserRepositoryInterface $users,
         private readonly SalaryReportRepositoryInterface $salaryReports,
         private readonly StoreUserRepositoryInterface $storeUsers,
-        private readonly DailyReportRepositoryInterface $dailyReports,
+        private readonly Sales $sales,
         private readonly ShiftRepositoryInterface $shifts,
         private readonly ShiftTypeRepositoryInterface $shiftTypes,
         private readonly UserShiftTypeRateRepositoryInterface $userRates,
@@ -107,7 +107,7 @@ final class AdminSalaryReportController
         }
 
         return Response::html($this->view->render('salary-report::reports-salary', [
-            'title'       => __('sr_title'),
+            'title'       => __('salary_report_sr_title'),
             'stores'      => $allStores,
             'store_members_by_store' => $membersByStore,
             'filter_store_id' => $filterStoreId,
@@ -120,7 +120,7 @@ final class AdminSalaryReportController
 
     public function salaryReports(Request $request): Response
     {
-        return $this->listReports($request, __('sr_title'));
+        return $this->listReports($request, __('salary_report_sr_title'));
     }
 
     // -------------------------------------------------------------------------
@@ -241,7 +241,7 @@ final class AdminSalaryReportController
         }
 
         return Response::html($this->view->render('salary-report::reports-salary-form', [
-            'title'   => __('sr_new') . ' — ' . ($store['name'] ?? ''),
+            'title'   => __('salary_report_sr_new') . ' — ' . ($store['name'] ?? ''),
             'store'   => $store,
             'mode'    => 'create',
             'report'  => $preset,
@@ -287,6 +287,9 @@ final class AdminSalaryReportController
 
         $targetMonth = $request->post('target_month', '');
         $userId = (int) $request->post('user_id', 0);
+        if ($userId > 0 && $this->storeUsers->findMembership($storeId, $userId) === null) {
+            throw new ValidationException(['user_id' => __('salary_report_error_salary_user_not_in_store')]);
+        }
 
         $existing = $this->salaryReports->findByStoreAndMonth($storeId, $targetMonth, $userId ?: null);
         if ($existing !== null) {
@@ -353,12 +356,12 @@ final class AdminSalaryReportController
 
     protected function reportShowTitle(array $report): string
     {
-        return __('sr_title') . ' — ' . ($report['target_month'] ?? '');
+        return __('salary_report_sr_title') . ' — ' . ($report['target_month'] ?? '');
     }
 
     protected function reportEditTitle(): string
     {
-        return __('sr_edit');
+        return __('salary_report_sr_edit');
     }
 
     protected function reportEditExtras(int $storeId, array $report): array
@@ -415,23 +418,11 @@ final class AdminSalaryReportController
 
         $totalPayment = 0;
         if ($userId === null) {
-            // Total des ventes depuis les rapports journaliers validés/soumis. En mode
-            // de saisie "cumulatif" (daily_report_settings.cumulative_mode), sales_total
-            // contient déjà le cumul depuis le début de la période : le ramener à des
-            // deltas journaliers avant de sommer, sans quoi chaque jour compterait
-            // plusieurs fois (voir DailyReportDataNormalizer).
-            $dailyReports = array_values(array_filter(
-                $this->dailyReports->findByStoreAndDateRange($storeId, $from, $to),
-                fn($r) => in_array($r['status'] ?? '', ['validated', 'submitted'], true)
-            ));
-            usort($dailyReports, fn($a, $b) => strcmp($a['report_date'], $b['report_date']));
-            $dailyReports = DailyReportDataNormalizer::toDailyDeltas(
-                $dailyReports,
-                DailyReportDataNormalizer::cumulativeModeOf($store),
-            );
-
-            foreach ($dailyReports as $r) {
-                $totalPayment += (float) ($r['sales_total'] ?? 0);
+            // Total des ventes des jours validés/soumis, lu auprès des fournisseurs de ventes (contrat 1.14, rapports
+            // journaliers) : déjà ramené à des valeurs du jour, même pour un magasin qui saisit en cumulé. Sans
+            // fournisseur (daily-report absent), aucune vente : le total reste à 0.
+            foreach ($this->sales->dailySales($storeId, $from, $to, ['validated', 'submitted']) as $day) {
+                $totalPayment += (float) $day['sales_total'];
             }
         }
 
